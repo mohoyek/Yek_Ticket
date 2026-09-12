@@ -1,0 +1,28 @@
+{
+  "name": "freebuff-tickets-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute freebuff-tickets-db --file=./src/db/schema.sql",
+    "db:init:local": "wrangler d1 execute freebuff-tickets-db --local --file=./src/db/schema.sql",
+    "db:seed": "wrangler d1 execute freebuff-tickets-db --file=./src/db/seed.sql",
+    "db:seed:local": "wrangler d1 execute freebuff-tickets-db --local --file=./src/db/seed.sql",
+    "db:migrate": "node scripts/db-migrate.mjs --remote",
+    "db:migrate:local": "node scripts/db-migrate.mjs --local",
+    "db:studio": "wrangler d1 execute freebuff-tickets-db --command=\"SELECT * FROM users\"",
+    "push:keys": "node scripts/generate-vapid-keys.mjs",
+    "test:webpush": "node tests/webpush.test.mjs",
+    "test:ecpoint": "node tests/ecpoint.test.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240923.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^3.80.0"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "zod": "^3.23.0"
+  }
+}

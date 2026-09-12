@@ -1,0 +1,33 @@
+name = "freebuff-tickets"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Development
+[dev]
+port = 8787
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "freebuff-tickets-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+# R2 Bucket
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "freebuff-tickets-files"
+
+# Environment variables (set via wrangler secret or .dev.vars)
+# JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
+# TELEGRAM_BOT_TOKEN = "your-telegram-bot-token"
+# TELEGRAM_WEBHOOK_SECRET = "your-webhook-secret"
+# CORS_ORIGIN = "http://localhost:5173"
+#
+# Web Push (VAPID) — generate once with `npm run push:keys`, then set:
+# VAPID_PUBLIC_KEY  = "BN4..." (65-byte uncompressed P-256 point, base64url)
+# VAPID_PRIVATE_KEY = "..."  (32-byte P-256 scalar, base64url)
+# VAPID_SUBJECT     = "mailto:support@yourdomain.com"
+#
+# If these are unset, the app still works — the push endpoints return 503 and
+# notifications fall back to the in-tab polling path.
