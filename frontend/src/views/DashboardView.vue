@@ -477,7 +477,7 @@ const priorityCards = [
               <th v-if="authStore.isInternalStaff" class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">منتسب‌شونده</th>
               <th class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">تاریخ</th>
               <th class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">کامنت</th>
-              <th v-if="canDeleteTicket" class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">عملیات</th>
+              <th v-if="canDeleteTicket()" class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">عملیات</th>
             </tr>
           </thead>
           <tbody>
@@ -506,7 +506,7 @@ const priorityCards = [
               </td>
               <td class="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(ticket.created_at) }}</td>
               <td class="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{{ ticket.comment_count || 0 }}</td>
-              <td v-if="canDeleteTicket" class="py-3 px-4">
+              <td v-if="canDeleteTicket()" class="py-3 px-4">
                 <button
                   @click.stop="handleDeleteTicket(ticket.id, ticket.title)"
                   :disabled="deletingId === ticket.id"
@@ -538,7 +538,7 @@ const priorityCards = [
             <Badge type="status" :value="ticket.status" />
             <Badge type="priority" :value="ticket.priority" />
             <span
-              v-if="canDeleteTicket"
+              v-if="canDeleteTicket()"
               class="mr-auto text-red-600 hover:text-red-700 dark:text-red-400 p-1"
               role="button"
               title="حذف تیکت"

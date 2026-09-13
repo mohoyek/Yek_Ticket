@@ -1,0 +1,18 @@
+{
+  "name": "yek-ticket",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "test:ecpoint": "npm --prefix backend run test:ecpoint",
+    "test:webpush": "npm --prefix backend run test:webpush",
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "db:migrate:local": "npm --prefix backend run db:migrate:local"
+  }
+}
