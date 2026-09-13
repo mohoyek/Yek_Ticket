@@ -347,6 +347,9 @@ tickets.post('/:id/attachments', async (c) => {
       if (err.message === 'INVALID_FILE_TYPE') {
         return errorResponse(c, MESSAGES.INVALID_FILE_TYPE, 400);
       }
+      if (err.message === 'STORAGE_UNAVAILABLE') {
+        return errorResponse(c, MESSAGES.STORAGE_UNAVAILABLE, 503);
+      }
     }
     throw err;
   }

@@ -13,11 +13,6 @@ binding = "DB"
 database_name = "tik_list"
 database_id = "b35f60f5-347e-45b9-a34d-600685c933d7"
 
-# R2 Bucket
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "freebuff-tickets-files"
-
 # Environment variables (set via wrangler secret or .dev.vars)
 # JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
 # TELEGRAM_BOT_TOKEN = "your-telegram-bot-token"

@@ -68,6 +68,7 @@ export const MESSAGES = {
   // Attachments
   ATTACHMENT_UPLOADED: 'فایل با موفقیت آپلود شد',
   ATTACHMENT_NOT_FOUND: 'فایل یافت نشد',
+  STORAGE_UNAVAILABLE: 'ذخیره‌سازی فایل در حال حاضر در دسترس نیست',
   FILE_TOO_LARGE: 'حجم فایل بیش از حد مجاز است (حداکثر ۱۰ مگابایت)',
   INVALID_FILE_TYPE: 'فرمت فایل پشتیبانی نمی‌شود',
 

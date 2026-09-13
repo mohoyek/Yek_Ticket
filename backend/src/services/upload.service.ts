@@ -15,7 +15,7 @@ const ALLOWED_TYPES = [
 ];
 
 export class UploadService {
-  constructor(private bucket: R2Bucket) {}
+  constructor(private bucket?: R2Bucket) {}
 
   async uploadFile(
     file: File,
@@ -30,6 +30,10 @@ export class UploadService {
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       throw new Error('INVALID_FILE_TYPE');
+    }
+
+    if (!this.bucket) {
+      throw new Error('STORAGE_UNAVAILABLE');
     }
 
     // Generate unique file path
@@ -52,12 +56,14 @@ export class UploadService {
   }
 
   async getFileUrl(filePath: string): Promise<string | null> {
+    if (!this.bucket) return null;
     const object = await this.bucket.head(filePath);
     if (!object) return null;
     return filePath;
   }
 
   async getSignedUrl(filePath: string): Promise<string | null> {
+    if (!this.bucket) return null;
     const object = await this.bucket.head(filePath);
     if (!object) return null;
 
@@ -67,10 +73,12 @@ export class UploadService {
   }
 
   async deleteFile(filePath: string): Promise<void> {
+    if (!this.bucket) return;
     await this.bucket.delete(filePath);
   }
 
   async serveFile(filePath: string): Promise<R2ObjectBody | null> {
+    if (!this.bucket) return null;
     const object = await this.bucket.get(filePath);
     return object;
   }
