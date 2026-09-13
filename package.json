@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "npm --prefix frontend run build",
+    "deploy:backend": "npm --prefix backend run deploy",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "test:ecpoint": "npm --prefix backend run test:ecpoint",
