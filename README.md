@@ -13,7 +13,7 @@
 - **کامنت‌گذاری**: امکان ارسال پاسخ و بحث روی تیکت‌ها
 - **آپلود فایل**: پیوست فایل به تیکت‌ها و کامنت‌ها
 - **اعلان‌ها**: سیستم اعلان با polling خودکار هر ۳۰ ثانیه
-- **اعلان فوری مرورگر (Web Push)**: دریافت اعلان حتی با بسته بودن تب/مرورگر — با VAPID و رمزنگاری RFC 8291 (بدون وابستگی خارجی، مخصوص Workers)
+- **اعلان فوری مرورگر (Web Push)**: دریافت اعلان حتی با بسته بودن تب/مرورگر — با VAPID و رمزنگاری RFC 8291
 - **تلگرام**: ثبت تیکت از طریق ربات تلگرام
 - **پایگاه دانش**: مقالات راهنما با جستجو، دسته‌بندی، برچسب و پیش‌نویس — مطالعه برای همه کاربران و مدیریت توسط تیم پشتیبانی
 - **مدیریت کاربران**: جستجو روی نام/نام کاربری و فیلتر بر اساس نقش
@@ -25,12 +25,14 @@
 ## 🛠️ تکنولوژی‌ها
 
 ### بک‌اند
-- **Cloudflare Workers**: سرور edge
-- **Hono**: فریمورک وب سبک و سریع
-- **D1**: دیتابیس SQLite مدیریت‌شده
-- **R2**: ذخیره‌سازی فایل‌ها
+- **Node.js + Express/Hono**: سرور بومی قابل اجرا روی ویندوز، لینوکس و مک
+- **better-sqlite3**: دیتابیس SQLite محلی (جایگزین D1)
+- **ذخیره‌سازی محلی فایل**: ذخیره فایل‌ها در پوشه uploads (جایگزین R2)
 - **JWT**: احراز هویت
 - **Zod**: اعتبارسنجی ورودی‌ها
+- **bcryptjs**: هش کردن رمز عبور
+- **multer**: آپلود فایل
+- **web-push**: ارسال اعلان‌های مرورگر
 
 ### فرانت‌اند
 - **Vue 3**: فریمورک با Composition API
@@ -40,16 +42,20 @@
 - **Vue Router**: مسیریابی
 - **Axios**: HTTP client
 
+### موبایل (اختیاری)
+- **Flutter + Dart**: اپلیکیشن موبایل برای اندروید و iOS
+
 ## 📁 ساختار پروژه
 
 ```
 freebuff-tickets/
-├── backend/                    # بک‌اند Cloudflare Worker
+├── backend/                    # بک‌اند Node.js با Hono/Express
 │   ├── src/
-│   │   ├── index.ts           # نقطه ورود اصلی
-│   │   ├── env.ts             # تایپ‌های environment
+│   │   ├── server.ts          # نقطه ورود اصلی سرور
+│   │   ├── index.ts           # تعریف مسیرها و middlewareها
+│   │   ├── env.node.ts        # تنظیمات environment مخصوص Node
 │   │   ├── db/
-│   │   │   ├── schema.sql     # ساختار دیتابیس
+│   │   │   ├── schema.sql     # ساختار دیتابیس SQLite
 │   │   │   └── seed.sql       # داده‌های اولیه
 │   │   ├── middleware/
 │   │   │   ├── auth.ts        # احراز هویت JWT
@@ -67,19 +73,20 @@ freebuff-tickets/
 │   │   ├── services/
 │   │   │   ├── auth.service.ts
 │   │   │   ├── user.service.ts
-│   │   │   ├── role.service.ts
-│   │   │   ├── ticket.service.ts
+│   │   │   ├── role.service.node.ts    # نسخه Node برای نقش‌ها
+│   │   │   ├── ticket.service.node.ts  # نسخه Node برای تیکت‌ها
 │   │   │   ├── knowledge.service.ts
-│   │   │   ├── notification.service.ts
-│   │   │   ├── upload.service.ts
+│   │   │   ├── notification.service.node.ts
+│   │   │   ├── upload.service.node.ts  # آپلود فایل محلی
 │   │   │   └── telegram.service.ts
 │   │   ├── schemas/
 │   │   │   └── index.ts       # اعتبارسنجی Zod
 │   │   └── utils/
-│   │       ├── password.ts    # هش رمز عبور
-│   │       ├── jwt.ts         # کمک‌کننده JWT
+│   │       ├── jwt.node.ts    # JWT مخصوص Node
+│   │       ├── password.node.ts # هش رمز عبور با bcrypt
 │   │       └── response.ts    # پاسخ‌های استاندارد
-│   ├── wrangler.toml          # تنظیمات Cloudflare Workers
+│   ├── uploads/               # پوشه ذخیره فایل‌های آپلودشده
+│   ├── .env                   # متغیرهای محیطی
 │   └── package.json
 ├── frontend/                  # فرانت‌اند Vue 3
 │   ├── src/
@@ -117,6 +124,15 @@ freebuff-tickets/
 │   ├── index.html
 │   ├── tailwind.config.js
 │   └── package.json
+├── flutter_app/               # اپلیکیشن موبایل فلاتر
+│   ├── lib/
+│   │   ├── main.dart
+│   │   ├── models/            # مدل‌های داده
+│   │   ├── screens/           # صفحات اپلیکیشن
+│   │   ├── providers/         # مدیریت state
+│   │   ├── services/          # سرویس‌های API
+│   │   └── widgets/           # ویجت‌های مشترک
+│   └── pubspec.yaml
 └── README.md
 ```
 
@@ -125,15 +141,11 @@ freebuff-tickets/
 ### پیش‌نیازها
 - Node.js 18+
 - npm یا pnpm
-- حساب Cloudflare (برای استقرار)
-- Wrangler CLI
+- Flutter SDK (برای اپلیکیشن موبایل - اختیاری)
 
 ### ۱. نصب وابستگی‌ها
 
 ```bash
-# نصب Wrangler CLI (اگر نصب ندارید)
-npm install -g wrangler
-
 # بک‌اند
 cd backend
 npm install
@@ -141,6 +153,10 @@ npm install
 # فرانت‌اند
 cd ../frontend
 npm install
+
+# اپلیکیشن موبایل (اختیاری)
+cd ../flutter_app
+flutter pub get
 ```
 
 ### ۲. راه‌اندازی دیتابیس
@@ -148,20 +164,17 @@ npm install
 ```bash
 cd backend
 
-# ایجاد دیتابیس D1
-wrangler d1 create freebuff-tickets-db
+# ایجاد دیتابیس SQLite به صورت خودکار هنگام اولین اجرا
+# فایل دیتابیس در backend/database.sqlite ذخیره می‌شود
 
-# شناسه دیتابیس را در wrangler.toml قرار دهید
+# اجرای migration ها برای ایجاد جداول
+npm run db:init
 
-# ایجاد جداول
-wrangler d1 execute freebuff-tickets-db --file=./src/db/schema.sql
-
-# درج داده‌های اولیه
-wrangler d1 execute freebuff-tickets-db --file=./src/db/seed.sql
+# درج داده‌های اولیه (نقش‌ها، دسته‌بندی‌ها، کاربر ادمین)
+npm run db:seed
 ```
 
-> ⚠️ دستورهای بالا **بدون** `--local` هستند، یعنی روی دیتابیس remote (اصلی) اجرا می‌شوند.
-> اگر می‌خواهید روی دیتابیس توسعه محلی کار کنید، به هر دستور `--local` را اضافه کنید یا از اسکریپت‌های آماده استفاده کنید.
+> دیتابیس SQLite به صورت خودکار در پوشه backend ساخته می‌شود و نیازی به تنظیمات اضافی ندارد.
 
 #### به‌روزرسانی دیتابیس موجود (migration ها)
 
@@ -170,10 +183,7 @@ wrangler d1 execute freebuff-tickets-db --file=./src/db/seed.sql
 ```bash
 cd backend
 
-# دیتابیس توسعه محلی
-npm run db:migrate:local
-
-# دیتابیس remote (اصلی) — پیش از اجرا مطمئن شوید
+# اجرای migration ها روی دیتابیس محلی
 npm run db:migrate
 ```
 
@@ -184,14 +194,27 @@ npm run db:migrate
 ```bash
 cd backend
 
-# ایجاد فایل .dev.vars برای توسعه محلی
-cat > .dev.vars << 'EOF'
-JWT_SECRET=your-super-secret-jwt-key
+# ایجاد فایل .env
+cat > .env << 'EOF'
+PORT=3000
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 TELEGRAM_WEBHOOK_SECRET=your-webhook-secret
 CORS_ORIGIN=http://localhost:5173
+VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+VAPID_SUBJECT=mailto:support@yourdomain.com
 EOF
 ```
+
+#### تولید کلیدهای VAPID برای Web Push
+
+```bash
+cd backend
+npm run push:keys
+```
+
+خروجی دستور بالا را در فایل `.env` قرار دهید.
 
 ### ۴. اجرای توسعه محلی
 
@@ -203,29 +226,45 @@ npm run dev
 # ترمینال ۲: فرانت‌اند
 cd frontend
 npm run dev
+
+# ترمینال ۳: اپلیکیشن موبایل (اختیاری)
+cd flutter_app
+flutter run -d windows   # برای ویندوز
+flutter run -d chrome    # برای وب
+flutter run              # برای دستگاه متصل
 ```
 
-بک‌اند روی `http://localhost:8787` و فرانت‌اند روی `http://localhost:5173` اجرا می‌شوند.
+بک‌اند روی `http://localhost:3000` و فرانت‌اند روی `http://localhost:5173` اجرا می‌شوند.
 
 ### ۵. ورود به سیستم
 
 - **ادمین**: نام کاربری `admin`، رمز `admin123`
 - **مشتری**: از صفحه لاگین ثبت‌نام کنید
 
-## 🚢 استقرار روی Cloudflare
+## 🚢 استقرار روی سرور (اختیاری)
 
 ### بک‌اند
 
 ```bash
 cd backend
 
-# تنظیم متغیرهای رمزگذاری‌شده
-wrangler secret put JWT_SECRET
-wrangler secret put TELEGRAM_BOT_TOKEN
-wrangler secret put TELEGRAM_WEBHOOK_SECRET
+# تنظیم متغیرهای محیطی در فایل .env
+# اطمینان از امنیت JWT_SECRET و سایر کلیدها
 
-# استقرار
-npm run deploy
+# ساخت برای production
+npm run build
+
+# اجرای سرور
+npm start
+```
+
+برای اجرای دائمی سرور در پس‌زمینه، می‌توانید از ابزارهایی مانند PM2 استفاده کنید:
+
+```bash
+npm install -g pm2
+pm2 start npm --name "freebuff-backend" -- start
+pm2 save
+pm2 startup
 ```
 
 ### فرانت‌اند
@@ -236,41 +275,28 @@ cd frontend
 # ساخت
 npm run build
 
-# استقرار روی Cloudflare Pages
-npx wrangler pages deploy dist
+# استقرار روی هر وب‌سرور (Nginx, Apache, ...)
+# فایل‌های پوشه dist را روی وب‌سرور کپی کنید
 ```
 
-### اعلان فوری مرورگر (Web Push)
+### اپلیکیشن موبایل
 
 ```bash
-cd backend
+cd flutter_app
 
-# تولید کلیدهای VAPID (یک بار)
-npm run push:keys
+# ساخت APK برای اندروید
+flutter build apk --release
 
-# توسعه محلی: مقدارها را در backend/.dev.vars بگذارید
-VAPID_PUBLIC_KEY="..."
-VAPID_PRIVATE_KEY="..."
-VAPID_SUBJECT="mailto:support@yourdomain.com"
-
-# تولید: این مقادیر را به‌صورت secret ثبت کنید
-wrangler secret put VAPID_PUBLIC_KEY
-wrangler secret put VAPID_PRIVATE_KEY
-wrangler secret put VAPID_SUBJECT
-
-# تست صحت پیاده‌سازی رمزنگاری (VAPID + aes128gcm)
-npm run test:webpush
-npm run test:ecpoint
+# ساخت برای iOS (نیاز به macOS)
+flutter build ios --release
 ```
-
-سپس کاربران می‌توانند از آیکون 🔔 در هدر، اعلان فوری مرورگر را فعال کنند. اگر کلیدهای VAPID تنظیم نشده باشند، سرویس 503 برمی‌گرداند و اعلان‌ها به حالت polling (هر ۳۰ ثانیه) برمی‌گردند.
 
 ### تنظیم وب‌هوک تلگرام
 
 ```bash
 # تنظیم webhook برای ربات تلگرام
 curl "https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook" \
-  -d "url=https://your-worker.your-subdomain.workers.dev/api/telegram/webhook" \
+  -d "url=https://your-domain.com/api/telegram/webhook" \
   -d "secret_token=your-webhook-secret"
 ```
 
@@ -446,13 +472,15 @@ curl "https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook" \
 ## 📝 نکات
 
 - تمام پیام‌های خطا و موفقیت به فارسی هستند
-- اعلان فوری مرورگر (Web Push) کاملاً با WebCrypto پیاده‌سازی شده (RFC 8291 + RFC 8292) و روی Cloudflare Workers بدون وابستگی Node اجرا می‌شود
+- اعلان فوری مرورگر (Web Push) با استفاده از کتابخانه web-push پیاده‌سازی شده است
 - رابط کاربری کاملاً راست‌چین (RTL) است
 - حالت شب (dark mode) از دکمه 🌙 در هدر قابل تغییر است و در localStorage ذخیره می‌شود
 - اعلان‌ها هر ۳۰ ثانیه به‌صورت خودکار بررسی می‌شوند
 - فایل‌های پیوست حداکثر ۱۰ مگابایت حجم دارند
 - فرمت‌های پشتیبانی‌شده: تصاویر، PDF، Word، Excel، ZIP
 - حداکثر ۵ فایل برای هر تیکت مجاز است
+- دیتابیس SQLite به صورت خودکار در پوشه backend ساخته می‌شود
+- فایل‌های آپلودشده در پوشه backend/uploads ذخیره می‌شوند
 
 ## 📄 مجوز
 
